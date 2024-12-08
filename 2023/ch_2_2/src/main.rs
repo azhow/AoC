@@ -2,28 +2,19 @@ use std::fs;
 
 #[derive(Debug)]
 struct Game {
-    id: usize,
-    red: usize,
-    green: usize,
-    blue: usize,
-    valid: bool,
+    power: usize,
 }
 
 impl Game {
     fn new(input: String) -> Game {
-        let max_red = 12;
-        let max_green = 13;
-        let max_blue = 14;
-
         let mut col_split = input.split(':');
 
         let token = col_split.next().unwrap();
-        let id = token.split(' ').last().unwrap().parse::<usize>().unwrap();
+        let _id = token.split(' ').last().unwrap().parse::<usize>().unwrap();
 
-        let red = 0;
-        let green = 0;
-        let blue = 0;
-        let mut valid = true;
+        let mut min_red = 0;
+        let mut min_green = 0;
+        let mut min_blue = 0;
 
         let semi_col_split = col_split.next().unwrap().split(';');
         for cubes in semi_col_split {
@@ -35,15 +26,15 @@ impl Game {
                 let color = space_split.next().unwrap();
 
                 match color {
-                    "red" => valid = valid && number <= max_red,
-                    "green" => valid = valid && number <= max_green,
-                    "blue" => valid = valid && number <= max_blue,
+                    "red" => min_red = if number > min_red { number } else { min_red },
+                    "green" => min_green = if number > min_green { number } else { min_green },
+                    "blue" => min_blue = if number > min_blue { number } else { min_blue },
                     _ => (),
                 }
             }
         }
 
-        Game { id, red, green, blue, valid }
+        Game { power: min_red * min_green * min_blue }
     }
 }
 
@@ -53,17 +44,13 @@ fn main() {
     let f_contents = fs::read_to_string(file_path)
         .expect("idk file?");
 
-    let mut valid_games = Vec::new();
+    let mut acc = 0;
     let line_split = f_contents.lines();
     for line in line_split {
         let curr_game = Game::new(line.to_string());
-        if curr_game.valid {
-            valid_games.push(curr_game.id);
-            println!("Valid Game {curr_game:?}");
-        }
+        println!("Valid Game {curr_game:?}");
+        acc += curr_game.power;
     }
 
-    let mut acc = 0;
-    valid_games.iter().for_each(|g| acc += g );
     println!("Sum of valid game ids: {acc}");
 }
